@@ -12,19 +12,48 @@ services:
     networks:
       - kafka
 
-  kafka:
+  kafka1:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka-kafka
+    container_name: kafka-kafka1
     depends_on:
       - zookeeper
     environment:
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka1:9092,PLAINTEXT_HOST://localhost:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     ports:
       - 9093:9093
+    networks:
+      - kafka
+
+  kafka2:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-kafka2
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka2:9092,PLAINTEXT_HOST://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    ports:
+      - 9094:9094
+    networks:
+      - kafka
+
+  kafka3:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-kafka3
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka3:9092,PLAINTEXT_HOST://localhost:9095
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    ports:
+      - 9095:9095
     networks:
       - kafka
 
@@ -32,7 +61,9 @@ services:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
     depends_on:
-      - kafka
+      - kafka1
+      - kafka2
+      - kafka3
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: kafka:9092
