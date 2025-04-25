@@ -1,16 +1,19 @@
 import { Inject, Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { ClientKafka, ClientsModule } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { ConsumerController } from './consumer.controller';
 import { ConsumerService } from './consumer.service';
 import { ConsumerConfigService } from './consumer.config.service';
-import { ClientKafka, ClientsModule } from '@nestjs/microservices';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     ClientsModule.registerAsync([
       {
-        name: 'KAFKA_PRODUCER',
-        useFactory: () => new ConsumerConfigService().kafkaOptions,
+        inject: [ConfigService],
+        name: 'KAFKA_CLIENT',
+        useFactory: (configService: ConfigService) => new ConsumerConfigService(configService).kafkaOptions,
       },
     ]),
   ],
@@ -19,7 +22,8 @@ import { ClientKafka, ClientsModule } from '@nestjs/microservices';
 })
 export class ConsumerModule implements OnModuleInit, OnModuleDestroy {
   constructor(
-    @Inject('KAFKA_PRODUCER') private readonly kafkaClient: ClientKafka,
+    @Inject('KAFKA_CLIENT')
+    private readonly kafkaClient: ClientKafka,
   ) {}
 
   async onModuleInit() {

@@ -1,5 +1,6 @@
 import { Inject, Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ClientKafka, ClientsModule } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { ProducerController } from './producer.controller';
 import { ProducerService } from './producer.service';
@@ -7,10 +8,12 @@ import { ProducerConfigService } from './producer.config.service';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     ClientsModule.registerAsync([
       {
-        name: 'KAFKA_PRODUCER',
-        useFactory: () => new ProducerConfigService().kafkaOptions,
+        inject: [ConfigService],
+        name: 'KAFKA_CLIENT',
+        useFactory: (configService: ConfigService) => new ProducerConfigService(configService).kafkaOptions,
       },
     ]),
   ],
@@ -19,7 +22,8 @@ import { ProducerConfigService } from './producer.config.service';
 })
 export class ProducerModule implements OnModuleInit, OnModuleDestroy {
   constructor(
-    @Inject('KAFKA_PRODUCER') private readonly kafkaClient: ClientKafka,
+    @Inject('KAFKA_CLIENT')
+    private readonly kafkaClient: ClientKafka,
   ) {}
 
   async onModuleInit() {

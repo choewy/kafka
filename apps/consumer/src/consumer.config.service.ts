@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { KafkaOptions, Transport } from '@nestjs/microservices';
 
 @Injectable()
 export class ConsumerConfigService {
+  constructor(private readonly configService: ConfigService) {}
+
   public get kafkaOptions(): KafkaOptions {
     process.env.KAFKAJS_NO_PARTITIONER_WARNING = '1';
 
@@ -10,10 +13,10 @@ export class ConsumerConfigService {
       transport: Transport.KAFKA,
       options: {
         client: {
-          brokers: ['127.0.0.1:9093'],
+          brokers: String(this.configService.getOrThrow('KAFKA_BROKERS')).split(','),
         },
         consumer: {
-          groupId: 'application-consumer',
+          groupId: [this.configService.getOrThrow('KAFKA_CLIENT_ID'), 'consumer'].join('-'),
           allowAutoTopicCreation: true,
         },
       },
